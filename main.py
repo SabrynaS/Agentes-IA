@@ -78,7 +78,7 @@ def main():
     env.process(storm_cycle(env, agents))
 
     # Tempo máximo da simulação em segundos
-    SIMULATION_TIME = 20  # Ajuste este valor conforme necessário
+    SIMULATION_TIME = 30  # Ajuste este valor conforme necessário
     simulation_step = 0
 
     running = True
