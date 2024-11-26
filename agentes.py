@@ -152,7 +152,7 @@ class StateBasedAgent:
             0  # Adiciona o atributo para contar os recursos coletados
         )
         self.obstacles = obstacles
-        self.color = (0, 255, 255)  # Ciano
+        self.color = constantes.GREEN
         self.explored = set()
         self.shared_info = {}
         self.in_storm = False
