@@ -28,7 +28,7 @@ def main():
         )
         for _ in range(10)
     ]
-    """resources = [
+    resources = [
         Resource(
             random.randint(0, constantes.GRID_WIDTH - 1),
             random.randint(0, constantes.GRID_HEIGHT - 1),
@@ -47,17 +47,19 @@ def main():
             )
             for _ in range(8)
         ]
-    )"""
-    resources = [
-        Resource(
-            random.randint(0, constantes.GRID_WIDTH - 1),
-            random.randint(0, constantes.GRID_HEIGHT - 1),
-            "estrutura_antiga",
-            2,
-            color=constantes.PURPLE,
-        )
-        for _ in range(5)
-    ]
+    )
+    resources.extend(
+        [
+            Resource(
+                random.randint(0, constantes.GRID_WIDTH - 1),
+                random.randint(0, constantes.GRID_HEIGHT - 1),
+                "estrutura_antiga",
+                2,
+                color=constantes.PURPLE,
+            )
+            for _ in range(5)
+        ]
+    )
 
     agents = [
         SimpleAgent(env, 0, 0, resources, 0, 0, obstacles),

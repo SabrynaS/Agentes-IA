@@ -1,6 +1,7 @@
 import constantes
 import random
 import pygame
+from recursos import is_position_blocked
 
 
 class SimpleAgent:
@@ -101,10 +102,28 @@ class GoalBasedAgent:
     def move_towards_goal(self, resource):
         dx = resource.x - self.x
         dy = resource.y - self.y
+
+        # Inicializando as variáveis com as posições atuais
+        new_x = self.x
+        new_y = self.y
+
+        # Tentando mover no eixo X
         if dx != 0:
-            self.x += 1 if dx > 0 else -1
-        elif dy != 0:
-            self.y += 1 if dy > 0 else -1
+            new_x = self.x + (1 if dx > 0 else -1)
+            # Verifica se a nova posição está ocupada por um obstáculo
+            if (new_x, self.y) not in [
+                (obstacle.x, obstacle.y) for obstacle in self.obstacles
+            ]:
+                self.x = new_x
+
+        # Tentando mover no eixo Y
+        if dy != 0:
+            new_y = self.y + (1 if dy > 0 else -1)
+            # Verifica se a nova posição está ocupada por um obstáculo
+            if (self.x, new_y) not in [
+                (obstacle.x, obstacle.y) for obstacle in self.obstacles
+            ]:
+                self.y = new_y
 
     def collect_resource(self):
         for resource in self.grid:
@@ -172,8 +191,11 @@ class StateBasedAgent:
         ]
         if valid_moves:
             new_x, new_y = random.choice(valid_moves)
-            self.x, self.y = new_x, new_y
-            self.explored.add((new_x, new_y))
+            if (new_x, new_y) not in [
+                (obstacle.x, obstacle.y) for obstacle in self.obstacles
+            ]:
+                self.x, self.y = new_x, new_y
+                self.explored.add((new_x, new_y))
 
     def collect_crystals(self):
         """Coleta cristais e compartilha a informação."""
