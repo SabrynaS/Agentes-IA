@@ -31,28 +31,14 @@ def main():
     env = simpy.Environment()
 
     # Criando obstáculos
+    # Criando obstáculos
     obstacles = [Resource(*generate_valid_position(), "obstacle") for _ in range(10)]
-    resources = [
-        Resource(
-            random.randint(0, constantes.GRID_WIDTH - 1),
-            random.randint(0, constantes.GRID_HEIGHT - 1),
-            "cristal",
-            color=constantes.GREEN,
-        )
-        for _ in range(10)
-    ]
+
+    # Criando recursos
+    resources = [Resource(*generate_valid_position(), "cristal") for _ in range(5)]
     resources.extend([Resource(*generate_valid_position(), "metais") for _ in range(5)])
     resources.extend(
-        [
-            Resource(
-                random.randint(0, constantes.GRID_WIDTH - 1),
-                random.randint(0, constantes.GRID_HEIGHT - 1),
-                "estrutura_antiga",
-                2,
-                color=constantes.PURPLE,
-            )
-            for _ in range(5)
-        ]
+        [Resource(*generate_valid_position(), "estrutura antiga", 2) for _ in range(5)]
     )
 
     agents = [
@@ -65,7 +51,7 @@ def main():
 
     env.process(storm_cycle(env, agents))
 
-    SIMULATION_TIME = 30
+    SIMULATION_TIME = 120
     simulation_step = 0
 
     running = True

@@ -1,7 +1,6 @@
 import constantes
 import random
 import pygame
-from recursos import is_position_blocked
 
 
 class SimpleAgent:
@@ -238,7 +237,7 @@ class CooperativeAgent:
         self.grid = grid
         self.base_x = base_x
         self.base_y = base_y
-        self.resources_collected = 0  
+        self.resources_collected = 0
         self.obstacles = obstacles
         self.color = constantes.ORANGE
         self.in_storm = False
