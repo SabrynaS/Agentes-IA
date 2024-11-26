@@ -35,8 +35,10 @@ def main():
     obstacles = [Resource(*generate_valid_position(), "obstacle") for _ in range(10)]
 
     # Criando recursos
-    resources = [Resource(*generate_valid_position(), "cristal") for _ in range(5)]
-    resources.extend([Resource(*generate_valid_position(), "metais") for _ in range(5)])
+    resources = [Resource(*generate_valid_position(), "cristal") for _ in range(15)]
+    resources.extend(
+        [Resource(*generate_valid_position(), "metais") for _ in range(10)]
+    )
     resources.extend(
         [Resource(*generate_valid_position(), "estrutura antiga", 2) for _ in range(5)]
     )

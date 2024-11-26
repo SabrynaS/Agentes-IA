@@ -102,27 +102,31 @@ class GoalBasedAgent:
         dx = resource.x - self.x
         dy = resource.y - self.y
 
-        # Inicializando as variáveis com as posições atuais
-        new_x = self.x
-        new_y = self.y
-
-        # Tentando mover no eixo X
+        # Lista de possíveis movimentos (priorizando o eixo X depois o Y)
+        possible_moves = []
         if dx != 0:
-            new_x = self.x + (1 if dx > 0 else -1)
-            # Verifica se a nova posição está ocupada por um obstáculo
-            if (new_x, self.y) not in [
+            possible_moves.append((self.x + (1 if dx > 0 else -1), self.y))
+        if dy != 0:
+            possible_moves.append((self.x, self.y + (1 if dy > 0 else -1)))
+
+        # Adiciona movimentos alternativos para desviar
+        possible_moves.append(
+            (self.x + (1 if dx > 0 else -1), self.y + (1 if dy > 0 else -1))
+        )
+        possible_moves.append(
+            (self.x + (1 if dx < 0 else -1), self.y + (1 if dy < 0 else -1))
+        )
+
+        # Testa cada movimento para verificar se não colide com obstáculos
+        for new_x, new_y in possible_moves:
+            if (new_x, new_y) not in [
                 (obstacle.x, obstacle.y) for obstacle in self.obstacles
             ]:
                 self.x = new_x
-
-        # Tentando mover no eixo Y
-        if dy != 0:
-            new_y = self.y + (1 if dy > 0 else -1)
-            # Verifica se a nova posição está ocupada por um obstáculo
-            if (self.x, new_y) not in [
-                (obstacle.x, obstacle.y) for obstacle in self.obstacles
-            ]:
                 self.y = new_y
+                return  # Sai após encontrar um movimento válido
+
+        # Caso nenhuma posição seja válida, o agente permanece parado
 
     def collect_resource(self):
         for resource in self.grid:
