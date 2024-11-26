@@ -25,14 +25,21 @@ def storm_cycle(env, agents):
     while True:
         yield env.timeout(random.randint(25, 50))
         print("Tempestade iniciada!")
-        
         for agent in agents:
             
             agent.in_storm = True
+
         yield env.timeout(5)  
         
         print("Tempestade terminou!")
         
         for agent in agents:
             agent.in_storm = False 
+
+        yield env.timeout(15)
+
+        print("Tempestade terminou!")
+
+        for agent in agents:
+            agent.in_storm = False
 
