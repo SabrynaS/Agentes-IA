@@ -13,19 +13,26 @@ class Resource:
         )
         self.required_agents = required_agents
         self.color = {
-            "cristal": constantes.CYAN,  # CYAN
-            "estrutura_antiga": constantes.BROWN,  # BROWN
-            "metais": constantes.GREY,  # GREY
+            "cristal": constantes.CYAN,  
+            "estrutura_antiga": constantes.BROWN,  
+            "metais": constantes.GREY,  
         }.get(
             resource_type, constantes.WHITE
-        )  # Default color (WHITE)
+        )  
 
 
 def storm_cycle(env, agents):
     while True:
         yield env.timeout(random.randint(25, 50))
         print("Tempestade iniciada!")
+        
         for agent in agents:
+            
             agent.in_storm = True
-        yield env.timeout(5)
+        yield env.timeout(5)  
+        
         print("Tempestade terminou!")
+        
+        for agent in agents:
+            agent.in_storm = False 
+
