@@ -94,7 +94,7 @@ def main():
         for agent in agents:
             agent.draw(screen)
 
-        pygame.display.flip()
+        pygame.display.update()
         simulation_step += 1
         clock.tick(constantes.FPS)
 
