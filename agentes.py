@@ -216,9 +216,9 @@ class CooperativeAgent:
         self.grid = grid
         self.base_x = base_x
         self.base_y = base_y
-        self.resources_collected = 0  # Initialize resources collected to 0
+        self.resources_collected = 0  
         self.obstacles = obstacles
-        self.color = (255, 140, 0)  # Laranja
+        self.color = constantes.ORANGE
         self.in_storm = False
         self.process = env.process(self.run())
 
@@ -274,7 +274,7 @@ class BDIAgent:
         self.base_y = base_y
         self.resources_collected = 0  # Initialize resources collected to 0
         self.obstacles = obstacles
-        self.color = (128, 0, 128)  # Roxo
+        self.color = constantes.PURPLE
         self.in_storm = False
         self.shared_info = {}
         self.process = env.process(self.run())
