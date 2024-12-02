@@ -2,13 +2,13 @@ import pygame
 import random
 import simpy
 import constantes
-from agentes import (
-    SimpleAgent,
-    GoalBasedAgent,
-    StateBasedAgent,
-    CooperativeAgent,
-    BDIAgent,
-)
+
+from agentes.simple_agent import SimpleAgent
+from agentes.goal_based_agent import GoalBasedAgent
+from agentes.state_based_agent import StateBasedAgent
+from agentes.cooperative_agent import CooperativeAgent
+from agentes.BDI_agent import BDIAgent
+
 from recursos import Resource, storm_cycle
 
 
