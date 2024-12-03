@@ -43,14 +43,18 @@ class BDIAgent:
                 self.shared_info.update(agent.shared_info)
 
     def collect_resources(self):
-        """Verifica se há recursos metálicos ou cristais na célula atual e coleta-os."""
+        """Verifica se há recursos metálicos ou cristais na célula atual ou na vizinhança e coleta-os."""
         if self.carrying_resource:
             return
 
-        for resource in self.grid[
-            :
-        ]:  # Cria uma cópia da lista para iterar sem problemas de modificação durante a iteração
-            if not resource.collected and resource.x == self.x and resource.y == self.y:
+        # Coordenadas da vizinhança (incluindo a célula atual)
+        neighbors = [
+            (self.x + dx, self.y + dy)
+            for dx, dy in [(0, 0), (0, 1), (0, -1), (1, 0), (-1, 0)]
+        ]
+
+        for resource in self.grid[:]:  # Cria uma cópia da lista para iteração segura
+            if not resource.collected and (resource.x, resource.y) in neighbors:
                 # Verifica se o recurso é metal ou cristal
                 if resource.type in ["metais", "cristal"]:
                     resource.collected = True  # Marca o recurso como coletado
@@ -60,11 +64,9 @@ class BDIAgent:
                     self.carrying_resource = (
                         True  # Marca que o agente está carregando um recurso
                     )
-                    print(
-                        f"Recurso {resource.type} coletado! Total de recursos: {self.resources_collected}"
-                    )
+
                     self.grid.remove(resource)  # Remove o recurso da lista de recursos
-                    break  # Coleta apenas o primeiro recurso encontrado na célula
+                    break  # Coleta apenas o primeiro recurso encontrado na vizinhança
 
     def move_towards_goal(self):
         """Move-se para a localização de recursos compartilhados."""
@@ -85,9 +87,6 @@ class BDIAgent:
             self.x += 1 if dx > 0 else -1 if dx < 0 else 0
             self.y += 1 if dy > 0 else -1 if dy < 0 else 0
             yield self.env.timeout(1)
-        print(
-            f"Recursos entregues na base! Total de recursos: {self.resources_collected}"
-        )
         self.carrying_resource = False  # Marca que o agente já entregou o recurso
 
     def run(self):

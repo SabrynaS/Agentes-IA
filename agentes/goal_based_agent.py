@@ -84,20 +84,33 @@ class GoalBasedAgent:
             )
 
     def collect_resource(self):
-        """Coleta cristais e metais e compartilha a informação."""
+        """Coleta recursos (cristais e metais) na posição atual ou na vizinhança."""
+        # Coordenadas da vizinhança (incluindo a célula atual)
+        neighbors = [
+            (self.x + dx, self.y + dy)
+            for dx, dy in [(0, 0), (0, 1), (0, -1), (1, 0), (-1, 0)]
+        ]
+
         for resource in self.grid:
             if (
                 not resource.collected
-                and resource.x == self.x
-                and resource.y == self.y
-                and resource.type
-                in ["cristal", "metais"]  # Verifica se é cristal ou metal
+                and (resource.x, resource.y) in neighbors
+                and resource.type in ["cristal", "metal"]
             ):
                 resource.collected = True
                 self.resources_collected += (
                     resource.value
                 )  # Incrementa o contador de recursos
+
+                # Atualiza a posição do agente para o local do recurso coletado
+                self.x, self.y = resource.x, resource.y
+
+                # Remove o recurso da lista de recursos a coletar
+                if resource in self.resources_to_collect:
+                    self.resources_to_collect.remove(resource)
+
                 return True  # Indica que um recurso foi coletado
+
         return False  # Retorna False se nenhum recurso foi coletado
 
     def return_to_base(self):
@@ -162,16 +175,6 @@ class GoalBasedAgent:
             else:
                 self.move_towards_goal()  # Opção de mover aleatoriamente se não houver recursos
             yield self.env.timeout(1)
-
-    # def move_randomly(self):
-    #     """Movimenta o agente aleatoriamente, mas sem atravessar obstáculos."""
-    #     dx, dy = random.choice([(0, 1), (0, -1), (1, 0), (-1, 0)])
-    #     new_x = max(0, min(self.x + dx, constantes.GRID_WIDTH - 1))
-    #     new_y = max(0, min(self.y + dy, constantes.GRID_HEIGHT - 1))
-    #     if (new_x, new_y) not in [
-    #         (obstacle.x, obstacle.y) for obstacle in self.obstacles
-    #     ]:
-    #         self.x, self.y = new_x, new_y
 
     def draw(self, screen):
         """Desenha o agente na tela."""
