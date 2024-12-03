@@ -2,6 +2,8 @@ import constantes
 import random
 import pygame
 
+from .state_based_agent import StateBasedAgent
+
 
 class BDIAgent:
     def __init__(self, name, env, x, y, grid, base_x, base_y, obstacles):
