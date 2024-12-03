@@ -95,7 +95,7 @@ class GoalBasedAgent:
             if (
                 not resource.collected
                 and (resource.x, resource.y) in neighbors
-                and resource.type in ["cristal", "metal"]
+                and resource.type in ["cristal", "metais"]
             ):
                 resource.collected = True
                 self.resources_collected += (
@@ -149,9 +149,7 @@ class GoalBasedAgent:
                     and (alt_x, alt_y) not in obstacle_positions
                 ]
                 if alternatives:
-                    next_x, next_y = random.choice(
-                        alternatives
-                    )  # Escolhe uma posição válida
+                    next_x, next_y = random.choice(alternatives)  # Escolhe uma posição válida
 
             # Atualiza a posição do agente
             self.x, self.y = next_x, next_y
