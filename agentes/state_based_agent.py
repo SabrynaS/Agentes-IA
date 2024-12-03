@@ -4,7 +4,8 @@ import pygame
 
 
 class StateBasedAgent:
-    def __init__(self, env, x, y, grid, base_x, base_y, obstacles):
+    def __init__(self, name, env, x, y, grid, base_x, base_y, obstacles):
+        self.name = name
         self.env = env
         self.x = x
         self.y = y

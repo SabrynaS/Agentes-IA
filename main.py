@@ -42,11 +42,11 @@ def main():
     )
 
     agents = [
-        SimpleAgent(env, 0, 0, resources, 0, 0, obstacles),
-        GoalBasedAgent(env, 0, 0, resources, 0, 0, obstacles),
-        StateBasedAgent(env, 1, 0, resources, 0, 0, obstacles),
-        CooperativeAgent(env, 0, 1, resources, 0, 0, obstacles),
-        BDIAgent(env, 2, 0, resources, 0, 0, obstacles),
+        SimpleAgent("Reativo Simples", env, 0, 0, resources, 0, 0, obstacles),
+        GoalBasedAgent("Baseado em Objetivo", env, 0, 0, resources, 0, 0, obstacles),
+        StateBasedAgent("Baseado em Estados", env, 1, 0, resources, 0, 0, obstacles),
+        CooperativeAgent("Cooperativo", env, 0, 1, resources, 0, 0, obstacles),
+        BDIAgent("BDI", env, 2, 0, resources, 0, 0, obstacles),
     ]
 
     env.process(storm_cycle(env, agents))
@@ -92,7 +92,7 @@ def main():
         clock.tick(constantes.FPS)
 
     for agent in agents:
-        print(f"Agente {agent.color} coletou {agent.resources_collected} recursos.")
+        print(f"Agente {agent.name} coletou {agent.resources_collected} recursos.")
 
     pygame.quit()
 
