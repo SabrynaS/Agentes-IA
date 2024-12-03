@@ -1,10 +1,11 @@
-import constantes
 import random
+
 import pygame
+import constantes
 
 
 class StateBasedAgent:
-    def __init__(self, name, env, x, y, grid, base_x, base_y, obstacles):
+    def __init__(self, name, env, x, y, grid, base_x, base_y, obstacles, cooperative_agent):
         self.name = name
         self.env = env
         self.x = x
@@ -18,6 +19,7 @@ class StateBasedAgent:
         self.explored = set()
         self.shared_info = {}
         self.in_storm = False
+        self.cooperative_agent = cooperative_agent  # Referência ao agente cooperativo
         self.process = env.process(self.run())
 
     def move_exploration(self):
@@ -35,13 +37,11 @@ class StateBasedAgent:
             not in [(obstacle.x, obstacle.y) for obstacle in self.obstacles]
         ]
 
-        # Se houver movimentos válidos, escolha um deles
         if valid_moves:
             new_x, new_y = random.choice(valid_moves)
             self.x, self.y = new_x, new_y
             self.explored.add((new_x, new_y))
         else:
-            # Tenta mover para qualquer vizinho não bloqueado se estiver preso
             fallback_moves = [
                 (nx, ny)
                 for nx, ny in neighbors
@@ -53,31 +53,32 @@ class StateBasedAgent:
             if fallback_moves:
                 self.x, self.y = random.choice(fallback_moves)
 
+    def alert_cooperative_agent(self, resource):
+        """Envia um alerta ao agente cooperativo para ir até o recurso."""
+        if resource:
+            self.cooperative_agent.receive_call(resource)
+
     def collect_resource(self):
-        """Coleta recursos (cristais e metais) na posição atual ou na vizinhança."""
-        # Coordenadas da vizinhança (incluindo a célula atual)
+        """Coleta recursos (cristais e metais) ou envia alerta para 'estrutura antiga'."""
         neighbors = [
             (self.x + dx, self.y + dy)
             for dx, dy in [(0, 0), (0, 1), (0, -1), (1, 0), (-1, 0)]
         ]
 
         for resource in self.grid:
-            if (
-                not resource.collected
-                and (resource.x, resource.y) in neighbors
-                and resource.type in ["cristal", "metais"]
-            ):
-                resource.collected = True
-                self.shared_info[(resource.x, resource.y)] = "coletado"
-                self.resources_collected += (
-                    resource.value
-                )  # Incrementa o total de recursos coletados
+            if not resource.collected and (resource.x, resource.y) in neighbors:
+                if resource.type in ["cristal", "metais"]:
+                    resource.collected = True
+                    self.shared_info[(resource.x, resource.y)] = "coletado"
+                    self.resources_collected += resource.value
+                    self.x, self.y = resource.x, resource.y
+                    return True  # Recurso coletado
+                elif resource.type == "estrutura antiga":
+                    self.shared_info[(resource.x, resource.y)] = "estrutura antiga"
+                    self.alert_cooperative_agent(resource)  # Envia alerta
+                    return False  # Para a coleta e espera
 
-                # Atualiza a posição do agente para o local do recurso coletado
-                self.x, self.y = resource.x, resource.y
-                return True  # Recurso coletado
-
-        return False  # Nenhum recurso encontrado
+        return False
 
     def return_to_base(self):
         """Retorna à base, considerando obstáculos."""
@@ -85,7 +86,6 @@ class StateBasedAgent:
             dx = self.base_x - self.x
             dy = self.base_y - self.y
 
-            # Movimenta em direção à base, considerando obstáculos
             new_x = self.x + (1 if dx > 0 else -1 if dx < 0 else 0)
             new_y = self.y + (1 if dy > 0 else -1 if dy < 0 else 0)
 

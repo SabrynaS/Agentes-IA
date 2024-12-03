@@ -21,7 +21,6 @@ def generate_valid_position():
         if not (0 <= x < 5 and 0 <= y < 5):  # Verifica se não está dentro da base
             return x, y
 
-
 def main():
     pygame.init()
     screen = pygame.display.set_mode(
@@ -35,17 +34,18 @@ def main():
     obstacles = [Resource(*generate_valid_position(), "obstacle") for _ in range(10)]
 
     # Criando recursos
-    resources = [Resource(*generate_valid_position(), "cristal") for _ in range(15)]
-    resources.extend([Resource(*generate_valid_position(), "metais") for _ in range(7)])
+    resources = [Resource(*generate_valid_position(), "cristal") for _ in range(5)]
+    resources.extend([Resource(*generate_valid_position(), "metais") for _ in range(5)])
     resources.extend(
-        [Resource(*generate_valid_position(), "estrutura antiga", 2) for _ in range(3)]
+        [Resource(*generate_valid_position(), "estrutura antiga", 2) for _ in range(30)]
     )
 
+    cooperativeAgent = CooperativeAgent("Cooperativo", env, 0, 1, resources, 0, 0, obstacles)
     agents = [
         SimpleAgent("Reativo Simples", env, 0, 0, resources, 0, 0, obstacles),
         GoalBasedAgent("Baseado em Objetivo", env, 0, 0, resources, 0, 0, obstacles),
-        StateBasedAgent("Baseado em Estados", env, 1, 0, resources, 0, 0, obstacles),
-        CooperativeAgent("Cooperativo", env, 0, 1, resources, 0, 0, obstacles),
+        StateBasedAgent("Baseado em Estados", env, 1, 0, resources, 0, 0, obstacles, cooperativeAgent),
+        cooperativeAgent,
         BDIAgent("BDI", env, 2, 0, resources, 0, 0, obstacles),
     ]
 
