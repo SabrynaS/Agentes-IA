@@ -112,49 +112,42 @@ class GoalBasedAgent:
                 return True  # Indica que um recurso foi coletado
 
         return False  # Retorna False se nenhum recurso foi coletado
-
+    
     def return_to_base(self):
         while self.x != self.base_x or self.y != self.base_y:
             dx = self.base_x - self.x
             dy = self.base_y - self.y
 
-            # Prioriza o movimento horizontal (x)
-            next_x = self.x + (1 if dx > 0 else -1 if dx < 0 else 0)
-            next_y = self.y + (1 if dy > 0 else -1 if dy < 0 else 0)
-
             # Lista de obstáculos como tuplas
             obstacle_positions = [(o.x, o.y) for o in self.obstacles]
 
-            # Verifica se o próximo movimento está bloqueado
-            if (next_x, self.y) in obstacle_positions:
-                next_x = self.x  # Fixa a posição X se bloqueada
+            # Lista de alternativas de movimento (priorizando a direção da base)
+            possible_moves = [
+                (self.x + (1 if dx > 0 else -1 if dx < 0 else 0), self.y),  # Movimento em X
+                (self.x, self.y + (1 if dy > 0 else -1 if dy < 0 else 0)),  # Movimento em Y
+                (self.x + 1, self.y),  # Movimento lateral
+                (self.x - 1, self.y),
+                (self.x, self.y + 1),
+                (self.x, self.y - 1),
+            ]
 
-            if (self.x, next_y) in obstacle_positions:
-                next_y = self.y  # Fixa a posição Y se bloqueada
+            # Filtrar movimentos válidos
+            valid_moves = [
+                (nx, ny)
+                for nx, ny in possible_moves
+                if 0 <= nx < constantes.GRID_WIDTH
+                and 0 <= ny < constantes.GRID_HEIGHT
+                and (nx, ny) not in obstacle_positions
+            ]
 
-            # Caso ambos estejam bloqueados, tenta desviar lateralmente
-            if (next_x, next_y) in obstacle_positions:
-                alternatives = [
-                    (self.x + 1, self.y),  # Tenta mover para direita
-                    (self.x - 1, self.y),  # Tenta mover para esquerda
-                    (self.x, self.y + 1),  # Tenta mover para baixo
-                    (self.x, self.y - 1),  # Tenta mover para cima
-                ]
-                # Filtra alternativas válidas
-                alternatives = [
-                    (alt_x, alt_y)
-                    for alt_x, alt_y in alternatives
-                    if 0 <= alt_x < constantes.GRID_WIDTH
-                    and 0 <= alt_y < constantes.GRID_HEIGHT
-                    and (alt_x, alt_y) not in obstacle_positions
-                ]
-                if alternatives:
-                    next_x, next_y = random.choice(alternatives)  # Escolhe uma posição válida
+            if valid_moves:
+                # Escolher o moviento que mais aproxima da base
+                best_move = min(valid_moves, key=lambda pos: abs(self.base_x - pos[0]) + abs(self.base_y - pos[1]))
+                self.x, self.y = best_move
+            else:
+                yield self.env.timeout(1) 
 
-            # Atualiza a posição do agente
-            self.x, self.y = next_x, next_y
-
-            # Aguarda o próximo passo no ambiente
+            
             yield self.env.timeout(1)
 
     def run(self):
