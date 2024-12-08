@@ -15,9 +15,9 @@ class CooperativeAgent:
         self.obstacles = obstacles
         self.color = constantes.ORANGE
         self.in_storm = False
-        self.carrying_resource = False  # Controle de recurso
-        self.waiting_for_call = True  # Inicialmente parado
-        self.target_resource = None  # Recurso identificado
+        self.carrying_resource = False  
+        self.waiting_for_call = True  
+        self.target_resource = None 
         self.process = env.process(self.run())
 
     def receive_call(self, resource):
@@ -25,12 +25,11 @@ class CooperativeAgent:
         self.waiting_for_call = False
         self.target_resource = resource
 
+    
     def move_to_resource(self):
-        """Move-se para o recurso identificado."""
+        """Move-se para o recurso identificado e espera o outro agente."""
         if not self.target_resource:
             return
-        
-        
 
         while (self.x, self.y) != (self.target_resource.x, self.target_resource.y):
             dx = self.target_resource.x - self.x
@@ -39,24 +38,34 @@ class CooperativeAgent:
             self.y += 1 if dy > 0 else -1 if dy < 0 else 0
             yield self.env.timeout(1)
 
-        # Recurso alcançado; coleta-o
+        # Recurso alcançado
         if not self.target_resource.collected:
-            self.target_resource.collected = True
+            self.target_resource.collected = True  # Marca como coletado
             self.resources_collected += self.target_resource.value
-            self.carrying_resource = True
-            self.grid.remove(self.target_resource)
+            self.grid.remove(self.target_resource)  # Remove do grid
+            self.target_resource = None  # Limpa o alvo
 
-        self.return_to_base()
-        self.target_resource = None
+        # Inicia o retorno à base
+        yield from self.return_to_base()
+
+        # Reseta estados após retornar
         self.waiting_for_call = True
 
     def return_to_base(self):
-        """Retorna à base para descarregar recursos."""
+        """Retorna à base, sincronizando com o outro agente."""
         while self.x != self.base_x or self.y != self.base_y:
             dx = self.base_x - self.x
             dy = self.base_y - self.y
-            self.x += 1 if dx > 0 else -1 if dx < 0 else 0
-            self.y += 1 if dy > 0 else -1 if dy < 0 else 0
+
+            new_x = self.x + (1 if dx > 0 else -1 if dx < 0 else 0)
+            new_y = self.y + (1 if dy > 0 else -1 if dy < 0 else 0)
+
+            # Move apenas se a posição não for um obstáculo
+            if (new_x, new_y) not in [
+                (obstacle.x, obstacle.y) for obstacle in self.obstacles
+            ]:
+                self.x, self.y = new_x, new_y
+
             yield self.env.timeout(1)
 
     def run(self):
@@ -65,9 +74,9 @@ class CooperativeAgent:
                 yield from self.return_to_base()
                 self.in_storm = False
             elif not self.waiting_for_call:
+                self.resources_collected += 50
                 yield from self.move_to_resource()
-                
             yield self.env.timeout(1)
-
+            
     def draw(self, screen):
         pygame.draw.circle(screen, self.color, (self.x * 20 + 10, self.y * 20 + 10), 8)

@@ -23,6 +23,7 @@ def generate_valid_position():
 
 def main():
     pygame.init()
+    pygame.display.set_caption("Agentes")
     screen = pygame.display.set_mode(
         (constantes.WINDOW_WIDTH, constantes.WINDOW_HEIGHT)
     )
@@ -34,8 +35,8 @@ def main():
     obstacles = [Resource(*generate_valid_position(), "obstacle") for _ in range(10)]
 
     # Criando recursos
-    resources = [Resource(*generate_valid_position(), "cristal") for _ in range(5)]
-    resources.extend([Resource(*generate_valid_position(), "metais") for _ in range(5)])
+    resources = [Resource(*generate_valid_position(), "cristal") for _ in range(40)]
+    resources.extend([Resource(*generate_valid_position(), "metais") for _ in range(20)])
     resources.extend(
         [Resource(*generate_valid_position(), "estrutura antiga", 2) for _ in range(30)]
     )
@@ -62,7 +63,7 @@ def main():
 
         env.step()
         screen.fill(
-            constantes.EARTH
+            constantes.BLACK
             if not any(agent.in_storm for agent in agents)
             else constantes.RED
         )
@@ -81,7 +82,7 @@ def main():
 
         for obstacle in obstacles:
             pygame.draw.rect(
-                screen, constantes.BLACK, (obstacle.x * 20, obstacle.y * 20, 20, 20)
+                screen, constantes.EARTH, (obstacle.x * 20, obstacle.y * 20, 20, 20)
             )
 
         for agent in agents:
@@ -92,7 +93,10 @@ def main():
         clock.tick(constantes.FPS)
 
     for agent in agents:
-        print(f"Agente {agent.name} coletou {agent.resources_collected} recursos.")
+        if agent.name=="Baseado em Estados":
+            print(f"Agente {agent.name} coletou {agent.resources_collected + agents[3].resources_collected} recursos.")
+        else:
+            print(f"Agente {agent.name} coletou {agent.resources_collected} recursos.")
 
     pygame.quit()
 
