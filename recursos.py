@@ -27,7 +27,7 @@ def storm_cycle(env, agents):
         for agent in agents:
 
             agent.in_storm = True
-        yield env.timeout(15)
+        yield env.timeout(10)
 
         print("Tempestade terminou!")
 

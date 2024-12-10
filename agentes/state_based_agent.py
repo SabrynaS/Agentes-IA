@@ -2,8 +2,12 @@ import random
 
 import pygame
 import constantes
+
+
 class StateBasedAgent:
-    def __init__(self, name, env, x, y, grid, base_x, base_y, obstacles, cooperative_agent):
+    def __init__(
+        self, name, env, x, y, grid, base_x, base_y, obstacles, cooperative_agent
+    ):
         self.name = name
         self.env = env
         self.x = x
@@ -17,9 +21,9 @@ class StateBasedAgent:
         self.explored = set()
         self.shared_info = {}
         self.in_storm = False
-        self.cooperative_agent = cooperative_agent  # Referência ao agente cooperativo
-        self.waiting_for_cooperative_agent = False  # Estado de espera
-        self.following_cooperative_agent = False  # Estado de acompanhamento
+        self.cooperative_agent = cooperative_agent
+        self.waiting_for_cooperative_agent = False
+        self.following_cooperative_agent = False
         self.process = env.process(self.run())
 
     def move_exploration(self):
@@ -62,27 +66,22 @@ class StateBasedAgent:
     def follow_cooperative_agent(self):
         """Acompanha o agente cooperativo no retorno à base."""
         while self.x != self.base_x or self.y != self.base_y:
-            # Move em direção ao cooperativo
             dx = self.cooperative_agent.x - self.x
             dy = self.cooperative_agent.y - self.y
 
-            # Calcula o próximo movimento
             new_x = self.x + (1 if dx > 0 else -1 if dx < 0 else 0)
             new_y = self.y + (1 if dy > 0 else -1 if dy < 0 else 0)
 
-            # Garante que o movimento é válido
             if (new_x, new_y) not in [
                 (obstacle.x, obstacle.y) for obstacle in self.obstacles
             ]:
                 self.x, self.y = new_x, new_y
 
-            # Sincroniza com o movimento do cooperativo
             yield self.env.timeout(1)
 
-        # Redefine os estados ao chegar à base
         self.waiting_for_cooperative_agent = False
         self.following_cooperative_agent = False
-            
+
     def collect_resource(self):
         """Tenta coletar recursos ou espera pelo agente cooperativo se necessário."""
         neighbors = [
@@ -97,14 +96,12 @@ class StateBasedAgent:
                     self.shared_info[(resource.x, resource.y)] = "coletado"
                     self.resources_collected += resource.value
                     self.x, self.y = resource.x, resource.y
-                    return True  # Recurso coletado
+                    return True
                 elif resource.type == "estrutura antiga":
-                    # Envia um alerta ao cooperativo e espera que ele colete o recurso
                     self.alert_cooperative_agent(resource)
-                    return False  # Não coleta diretamente
+                    return False
 
         return False
-
 
     def return_to_base(self):
         """Retorna à base, considerando obstáculos."""
@@ -123,33 +120,26 @@ class StateBasedAgent:
                 self.move_exploration()
 
             yield self.env.timeout(1)
-                    
+
     def run(self):
         while True:
             if self.in_storm:
-                # Retorna à base durante tempestade
                 yield from self.return_to_base()
                 self.in_storm = False
             elif self.waiting_for_cooperative_agent:
-                # Espera até que o cooperativo colete o recurso
                 while not self.cooperative_agent.carrying_resource:
                     yield self.env.timeout(1)
 
-                # Após o cooperativo coletar o recurso, retorna à base
                 yield from self.return_to_base()
                 self.waiting_for_cooperative_agent = False
             else:
-                # Explora ou coleta recursos
                 self.move_exploration()
                 if self.collect_resource():
-                    # Retorna à base após coletar recurso diretamente
                     yield from self.return_to_base()
                 else:
                     self.move_exploration()
 
             yield self.env.timeout(1)
 
-            
     def draw(self, screen):
-        """Desenha o agente na tela."""
         pygame.draw.circle(screen, self.color, (self.x * 20 + 10, self.y * 20 + 10), 8)

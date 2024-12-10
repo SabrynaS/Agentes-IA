@@ -21,6 +21,13 @@ def generate_valid_position():
         if not (0 <= x < 5 and 0 <= y < 5):  # Verifica se não está dentro da base
             return x, y
 
+
+def render_text(screen, text, font, color, position):
+    """Renderiza texto na tela."""
+    text_surface = font.render(text, True, color)
+    screen.blit(text_surface, position)
+
+
 def main():
     pygame.init()
     pygame.display.set_caption("Agentes")
@@ -30,27 +37,41 @@ def main():
     clock = pygame.time.Clock()
     env = simpy.Environment()
 
-    # Criando obstáculos
-    # Criando obstáculos
-    obstacles = [Resource(*generate_valid_position(), "obstacle") for _ in range(1)]
+    obstacles = [Resource(*generate_valid_position(), "obstacle") for _ in range(5)]
 
     # Criando recursos
-    resources = [Resource(*generate_valid_position(), "cristal") for _ in range(50)]
-    resources.extend([Resource(*generate_valid_position(), "metais") for _ in range(20)])
+    resources = [Resource(*generate_valid_position(), "cristal") for _ in range(15)]
     resources.extend(
-        [Resource(*generate_valid_position(), "estrutura antiga", 2) for _ in range(50)]
+        [Resource(*generate_valid_position(), "metais") for _ in range(10)]
+    )
+    resources.extend(
+        [Resource(*generate_valid_position(), "estrutura antiga", 2) for _ in range(10)]
     )
 
-    cooperativeAgent = CooperativeAgent("Cooperativo", env, 0, 1, resources, 0, 0, obstacles)
+    cooperativeAgent = CooperativeAgent(
+        "Cooperativo", env, 0, 1, resources, 0, 0, obstacles
+    )
     agents = [
         SimpleAgent("Reativo Simples", env, 0, 0, resources, 0, 0, obstacles),
         GoalBasedAgent("Baseado em Objetivo", env, 0, 0, resources, 0, 0, obstacles),
-        StateBasedAgent("Baseado em Estados", env, 1, 0, resources, 0, 0, obstacles, cooperativeAgent),
+        StateBasedAgent(
+            "Baseado em Estados",
+            env,
+            1,
+            0,
+            resources,
+            0,
+            0,
+            obstacles,
+            cooperativeAgent,
+        ),
         cooperativeAgent,
         BDIAgent("BDI", env, 2, 0, resources, 0, 0, obstacles),
     ]
 
-    env.process(storm_cycle(env, agents))
+    timer_font = pygame.font.Font(None, 36)
+
+    # /env.process(storm_cycle(env, agents))
 
     SIMULATION_TIME = 60
     simulation_step = 0
@@ -88,16 +109,28 @@ def main():
         for agent in agents:
             agent.draw(screen)
 
+        # Calcular e renderizar o timer
+        time_left = SIMULATION_TIME - (simulation_step // constantes.FPS)
+        timer_text = f"{time_left}s"
+        render_text(
+            screen,
+            timer_text,
+            timer_font,
+            constantes.WHITE,
+            (constantes.WINDOW_WIDTH - 50, 5),
+        )
+
         pygame.display.update()
         simulation_step += 1
         clock.tick(constantes.FPS)
 
     for agent in agents:
-        if agent.name=="Baseado em Estados":
-            print(f"Agente {agent.name} coletou {agent.resources_collected + agents[3].resources_collected} recursos.")
+        if agent.name == "Baseado em Estados":
+            print(
+                f"Agente {agent.name} coletou {agent.resources_collected + agents[3].resources_collected} recursos."
+            )
         else:
             print(f"Agente {agent.name} coletou {agent.resources_collected} recursos.")
-
     pygame.quit()
 
 
