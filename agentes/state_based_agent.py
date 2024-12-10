@@ -62,25 +62,29 @@ class StateBasedAgent:
     def follow_cooperative_agent(self):
         """Acompanha o agente cooperativo no retorno à base."""
         while self.x != self.base_x or self.y != self.base_y:
+            # Move em direção ao cooperativo
             dx = self.cooperative_agent.x - self.x
             dy = self.cooperative_agent.y - self.y
 
+            # Calcula o próximo movimento
             new_x = self.x + (1 if dx > 0 else -1 if dx < 0 else 0)
             new_y = self.y + (1 if dy > 0 else -1 if dy < 0 else 0)
 
+            # Garante que o movimento é válido
             if (new_x, new_y) not in [
                 (obstacle.x, obstacle.y) for obstacle in self.obstacles
             ]:
                 self.x, self.y = new_x, new_y
 
+            # Sincroniza com o movimento do cooperativo
             yield self.env.timeout(1)
 
-        # Ao chegar na base, redefine os estados
+        # Redefine os estados ao chegar à base
         self.waiting_for_cooperative_agent = False
         self.following_cooperative_agent = False
-        
+            
     def collect_resource(self):
-        """Coleta recursos (cristais e metais) ou envia alerta para 'estrutura antiga'."""
+        """Tenta coletar recursos ou espera pelo agente cooperativo se necessário."""
         neighbors = [
             (self.x + dx, self.y + dy)
             for dx, dy in [(0, 0), (0, 1), (0, -1), (1, 0), (-1, 0)]
@@ -95,11 +99,12 @@ class StateBasedAgent:
                     self.x, self.y = resource.x, resource.y
                     return True  # Recurso coletado
                 elif resource.type == "estrutura antiga":
-                    self.shared_info[(resource.x, resource.y)] = "estrutura antiga"
-                    self.alert_cooperative_agent(resource)  # Envia alerta
-                    return False  # Para a coleta e espera
+                    # Envia um alerta ao cooperativo e espera que ele colete o recurso
+                    self.alert_cooperative_agent(resource)
+                    return False  # Não coleta diretamente
 
         return False
+
 
     def return_to_base(self):
         """Retorna à base, considerando obstáculos."""
@@ -118,33 +123,33 @@ class StateBasedAgent:
                 self.move_exploration()
 
             yield self.env.timeout(1)
-            
+                    
     def run(self):
         while True:
             if self.in_storm:
+                # Retorna à base durante tempestade
                 yield from self.return_to_base()
                 self.in_storm = False
             elif self.waiting_for_cooperative_agent:
-                # Espera até que o cooperativo chegue
-                while (
-                    self.cooperative_agent.x != self.x
-                    or self.cooperative_agent.y != self.y
-                ):
+                # Espera até que o cooperativo colete o recurso
+                while not self.cooperative_agent.carrying_resource:
                     yield self.env.timeout(1)
 
-                # Após encontro, inicia acompanhamento até a base
-                self.following_cooperative_agent = True
+                # Após o cooperativo coletar o recurso, retorna à base
+                yield from self.return_to_base()
                 self.waiting_for_cooperative_agent = False
-                yield from self.follow_cooperative_agent()
             else:
+                # Explora ou coleta recursos
                 self.move_exploration()
                 if self.collect_resource():
+                    # Retorna à base após coletar recurso diretamente
                     yield from self.return_to_base()
                 else:
                     self.move_exploration()
 
             yield self.env.timeout(1)
 
+            
     def draw(self, screen):
         """Desenha o agente na tela."""
         pygame.draw.circle(screen, self.color, (self.x * 20 + 10, self.y * 20 + 10), 8)

@@ -1,4 +1,5 @@
 import pygame
+from agentes import state_based_agent
 import constantes
 
 
@@ -18,6 +19,7 @@ class CooperativeAgent:
         self.carrying_resource = False  
         self.waiting_for_call = True  
         self.target_resource = None 
+        self.state_based_agent = state_based_agent  # Referência ao StateBasedAgent
         self.process = env.process(self.run())
 
     def receive_call(self, resource):
@@ -25,32 +27,35 @@ class CooperativeAgent:
         self.waiting_for_call = False
         self.target_resource = resource
 
-    
     def move_to_resource(self):
-        """Move-se para o recurso identificado e espera o outro agente."""
-        if not self.target_resource:
-            return
+            """Move-se para o recurso identificado e espera o outro agente."""
+            if not self.target_resource:
+                return
 
-        while (self.x, self.y) != (self.target_resource.x, self.target_resource.y):
-            dx = self.target_resource.x - self.x
-            dy = self.target_resource.y - self.y
-            self.x += 1 if dx > 0 else -1 if dx < 0 else 0
-            self.y += 1 if dy > 0 else -1 if dy < 0 else 0
-            yield self.env.timeout(1)
+            while (self.x, self.y) != (self.target_resource.x, self.target_resource.y):
+                dx = self.target_resource.x - self.x
+                dy = self.target_resource.y - self.y
+                self.x += 1 if dx > 0 else -1 if dx < 0 else 0
+                self.y += 1 if dy > 0 else -1 if dy < 0 else 0
+                yield self.env.timeout(1)
 
-        # Recurso alcançado
-        if not self.target_resource.collected:
-            self.target_resource.collected = True  # Marca como coletado
-            self.resources_collected += self.target_resource.value
-            self.grid.remove(self.target_resource)  # Remove do grid
-            self.target_resource = None  # Limpa o alvo
+            # Recurso alcançado
+            if not self.target_resource.collected:
+                self.target_resource.collected = True  # Marca como coletado
+                self.resources_collected += self.target_resource.value
+                self.grid.remove(self.target_resource)  # Remove do grid
+                self.target_resource = None  # Limpa o alvo
+                self.carrying_resource = True  # Atualiza estado para sinalizar o transporte
 
-        # Inicia o retorno à base
-        yield from self.return_to_base()
+            # Inicia o retorno à base
+            yield from self.return_to_base()
 
-        # Reseta estados após retornar
-        self.waiting_for_call = True
+            # Reseta estados após retornar
+            self.carrying_resource = False
+            self.waiting_for_call = True
 
+
+                
     def return_to_base(self):
         """Retorna à base, sincronizando com o outro agente."""
         while self.x != self.base_x or self.y != self.base_y:

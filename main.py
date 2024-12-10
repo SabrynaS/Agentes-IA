@@ -32,13 +32,13 @@ def main():
 
     # Criando obstáculos
     # Criando obstáculos
-    obstacles = [Resource(*generate_valid_position(), "obstacle") for _ in range(10)]
+    obstacles = [Resource(*generate_valid_position(), "obstacle") for _ in range(1)]
 
     # Criando recursos
-    resources = [Resource(*generate_valid_position(), "cristal") for _ in range(40)]
+    resources = [Resource(*generate_valid_position(), "cristal") for _ in range(50)]
     resources.extend([Resource(*generate_valid_position(), "metais") for _ in range(20)])
     resources.extend(
-        [Resource(*generate_valid_position(), "estrutura antiga", 2) for _ in range(30)]
+        [Resource(*generate_valid_position(), "estrutura antiga", 2) for _ in range(50)]
     )
 
     cooperativeAgent = CooperativeAgent("Cooperativo", env, 0, 1, resources, 0, 0, obstacles)
